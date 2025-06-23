@@ -1,6 +1,7 @@
 package ejercicios
 
 import (
+	"errors"
 	"untref-ayp2/guia-abb/binarytree"
 	"untref-ayp2/guia-abb/stack"
 
@@ -21,18 +22,40 @@ type BSTPreOrderIterator[T constraints.Ordered] struct {
 //   - un Iterator.
 func NewBSTPreOrderIterator[T constraints.Ordered](bst *binarytree.BinarySearchTree[T]) Iterator[T] {
 	// Implementar
-	return nil
+	stackNodos := stack.NewStack[*binarytree.BinaryNode[T]]()
+	if bst.IsEmpty() {
+		return &BSTInOrderIterator[T]{internalStack: stackNodos}
+	}
+	recurPreorder(bst.GetRoot(), stackNodos)
+	return &BSTInOrderIterator[T]{internalStack: stackNodos}
+}
+
+func recurPreorder[T constraints.Ordered](n *binarytree.BinaryNode[T], stack *stack.Stack[*binarytree.BinaryNode[T]]) {
+	if n == nil {
+		return
+	}
+	// Preorder: r i d
+	// para un stack d i r
+
+	recurPreorder(n.GetRight(), stack)
+	recurPreorder(n.GetLeft(), stack)
+	stack.Push(n)
 }
 
 // HasNext indica si hay un siguiente dato.
 func (it *BSTPreOrderIterator[T]) HasNext() bool {
 	// Implementar
-	return false
+	return !it.internalStack.IsEmpty()
 }
 
 // Next devuelve el siguiente dato, respetando el recorrido PreOrder.
 func (it *BSTPreOrderIterator[T]) Next() (T, error) {
 	// Implementar
 	var zero T
-	return zero, nil
+	if !it.HasNext() {
+		return zero, errors.New("árbol vacío")
+	}
+	top, _ := it.internalStack.Pop()
+
+	return top.GetData(), nil
 }
